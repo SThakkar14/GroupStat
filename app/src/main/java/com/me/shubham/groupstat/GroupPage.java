@@ -1,6 +1,7 @@
 package com.me.shubham.groupstat;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,13 +31,17 @@ import java.util.List;
 public class GroupPage extends Activity {
     ListView listview;
     CodeLearnAdapter cda;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_page);
-
         listview = (ListView) findViewById(R.id.listview);
+
+        progressDialog = new ProgressDialog(this, R.style.MyTheme);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
         createList();
     }
@@ -55,7 +61,13 @@ public class GroupPage extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            LoginManager.getInstance().logOut();
+
+            Intent intent = new Intent(this, LoginPage.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
             return true;
         }
 
@@ -86,6 +98,7 @@ public class GroupPage extends Activity {
 
                                 cda = new CodeLearnAdapter(groups);
                                 listview.setAdapter(cda);
+                                progressDialog.dismiss();
 
                                 listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                     @Override

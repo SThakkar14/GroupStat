@@ -1,6 +1,8 @@
 package com.me.shubham.groupstat;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,6 +12,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +28,7 @@ import java.util.Objects;
 
 public class ResultPage extends Activity {
     Map<person, Integer> from;
+    ProgressDialog progressDialog;
 
     TextView test;
     GraphRequest.Callback callback = new GraphRequest.Callback() {
@@ -41,6 +45,10 @@ public class ResultPage extends Activity {
 
         test = (TextView) findViewById(R.id.something);
         from = new HashMap<>();
+
+        progressDialog = new ProgressDialog(this, R.style.MyTheme);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
         getPosts();
     }
@@ -104,6 +112,7 @@ public class ResultPage extends Activity {
             sb.append(entry.getKey().name).append(": ").append(entry.getValue()).append("\n");
 
         test.setText(sb.toString());
+        progressDialog.dismiss();
     }
 
     @Override
@@ -121,7 +130,13 @@ public class ResultPage extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            LoginManager.getInstance().logOut();
+
+            Intent intent = new Intent(this, LoginPage.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
             return true;
         }
 
