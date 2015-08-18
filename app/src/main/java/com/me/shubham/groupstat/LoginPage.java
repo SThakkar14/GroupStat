@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.Window;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -22,12 +23,14 @@ public class LoginPage extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login_page);
 
         callbackManager = CallbackManager.Factory.create();
 
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
-        loginButton.setReadPermissions("user_friends", "user_managed_groups");
+        loginButton.setReadPermissions("user_managed_groups");
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -36,7 +39,7 @@ public class LoginPage extends Activity {
 
             @Override
             public void onCancel() {
-                Toast.makeText(getApplicationContext(), "Cancel", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "You kinda have to accept...", Toast.LENGTH_LONG).show();
             }
 
             @Override

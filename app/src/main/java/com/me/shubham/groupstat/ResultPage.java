@@ -1,7 +1,10 @@
 package com.me.shubham.groupstat;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -37,14 +40,21 @@ public class ResultPage extends Activity {
             processResponse(graphResponse);
         }
     };
+    int optionSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_page);
 
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null)
+            actionBar.setTitle(getIntent().getStringExtra("groupName"));
+
         test = (TextView) findViewById(R.id.something);
         from = new HashMap<>();
+
+        optionSelected = getIntent().getIntExtra("optionSelected", 0);
 
         progressDialog = new ProgressDialog(this, R.style.MyTheme);
         progressDialog.setCancelable(false);
@@ -76,7 +86,7 @@ public class ResultPage extends Activity {
         try {
             JSONArray allData = graphResponse.getJSONObject().getJSONArray("data");
             if (allData.length() == 0) {
-                displayResults();
+                displayResults(optionSelected);
             } else {
                 for (int numDataPoint = 0; numDataPoint < allData.length(); numDataPoint++) {
 
@@ -103,8 +113,7 @@ public class ResultPage extends Activity {
         }
     }
 
-    private void displayResults() {
-        int optionSelected = getIntent().getIntExtra("optionSelected", 0);
+    private void displayResults(int optionSelected) {
 
         List<Map.Entry<person, resultingData>> list = new ArrayList<>(from.entrySet());
 
@@ -161,6 +170,24 @@ public class ResultPage extends Activity {
             startActivity(intent);
 
             return true;
+        } else if (id == R.id.action_sort) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(ResultPage.this);
+            String[] options = {"Likes", "Posts"};
+            builder.setTitle("Sort by...").setItems(options, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if(which == 0) {
+                        displayResults(0);
+                    } else if (which == 1){
+                        displayResults(1);
+                    }
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            }).create().show();
         }
 
         return super.onOptionsItemSelected(item);

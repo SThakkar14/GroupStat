@@ -8,5 +8,6 @@
 
     <string name="facebook_app_id">1611349875791388</string>
     <string name="action_logout">Logout</string>
+    <string name="action_sort">Sort</string>
 
 </resources>

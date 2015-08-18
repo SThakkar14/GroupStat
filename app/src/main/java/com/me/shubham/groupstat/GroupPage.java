@@ -78,7 +78,7 @@ public class GroupPage extends Activity {
 
     public void createList() {
         Bundle parameters = new Bundle();
-        parameters.putString("limit", "1000");
+        parameters.putString("limit", "10000");
 
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
