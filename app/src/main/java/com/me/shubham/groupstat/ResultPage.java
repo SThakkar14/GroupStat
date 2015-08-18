@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ResultPage extends Activity {
-    Map<person, Integer> from;
+    Map<person, resultingData> from;
     ProgressDialog progressDialog;
 
     TextView test;
@@ -55,8 +55,7 @@ public class ResultPage extends Activity {
 
     private void getPosts() {
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "from");
-//        parameters.putString("fields", "from, likes.summary(true)");
+        parameters.putString("fields", "from, likes.summary(true)");
         parameters.putString("limit", "1000000");
 
         new GraphRequest(
@@ -80,15 +79,22 @@ public class ResultPage extends Activity {
                 displayResults();
             } else {
                 for (int numDataPoint = 0; numDataPoint < allData.length(); numDataPoint++) {
-                    JSONObject dataPoint = allData.getJSONObject(numDataPoint).getJSONObject("from");
 
+                    JSONObject post = allData.getJSONObject(numDataPoint);
+
+                    JSONObject dataPoint = post.getJSONObject("from");
                     person newOne = new person(dataPoint.get("name").toString(), dataPoint.get("id").toString());
 
-                    Integer numTimes = from.get(newOne);
-                    if (numTimes == null)
-                        from.put(newOne, 1);
-                    else
-                        from.put(newOne, numTimes + 1);
+                    resultingData dataAboutPost = from.get(newOne);
+                    int numLikes = (Integer) post.getJSONObject("likes").getJSONObject("summary").get("total_count");
+
+                    if (dataAboutPost == null) {
+                        dataAboutPost = new resultingData(1, numLikes);
+                        from.put(newOne, dataAboutPost);
+                    } else {
+                        dataAboutPost.numPosts += 1;
+                        dataAboutPost.numLikes += numLikes;
+                    }
                 }
                 nextPosts(graphResponse.getRequestForPagedResults(GraphResponse.PagingDirection.NEXT));
             }
@@ -98,18 +104,35 @@ public class ResultPage extends Activity {
     }
 
     private void displayResults() {
-        List<Map.Entry<person, Integer>> list = new ArrayList<>(from.entrySet());
+        int optionSelected = getIntent().getIntExtra("optionSelected", 0);
 
-        Collections.sort(list, new Comparator<Map.Entry<person, Integer>>() {
-            @Override
-            public int compare(Map.Entry<person, Integer> lhs, Map.Entry<person, Integer> rhs) {
-                return rhs.getValue() - lhs.getValue();
-            }
-        });
+        List<Map.Entry<person, resultingData>> list = new ArrayList<>(from.entrySet());
+
+        if (optionSelected == 0) {
+            Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
+                @Override
+                public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
+                    return rhs.getValue().numLikes - lhs.getValue().numLikes;
+                }
+            });
+        } else if (optionSelected == 1) {
+            Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
+                @Override
+                public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
+                    return rhs.getValue().numPosts - lhs.getValue().numPosts;
+                }
+            });
+        }
 
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<person, Integer> entry : list)
-            sb.append(entry.getKey().name).append(": ").append(entry.getValue()).append("\n");
+        for (Map.Entry<person, resultingData> entry : list) {
+            if (optionSelected == 0) {
+                if (entry.getValue().numLikes != 0)
+                    sb.append(entry.getKey().name).append(": ").append(entry.getValue().numLikes).append("\n");
+            } else if (optionSelected == 1) {
+                sb.append(entry.getKey().name).append(": ").append(entry.getValue().numPosts).append("\n");
+            }
+        }
 
         test.setText(sb.toString());
         progressDialog.dismiss();
@@ -134,7 +157,7 @@ public class ResultPage extends Activity {
             LoginManager.getInstance().logOut();
 
             Intent intent = new Intent(this, LoginPage.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
 
             return true;
@@ -169,6 +192,21 @@ public class ResultPage extends Activity {
         @Override
         public int hashCode() {
             return id.hashCode();
+        }
+    }
+
+    public class resultingData {
+        int numPosts;
+        int numLikes;
+
+        public resultingData(int numPosts, int numLikes) {
+            this.numPosts = numPosts;
+            this.numLikes = numLikes;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(numPosts) + String.valueOf(numLikes);
         }
     }
 }

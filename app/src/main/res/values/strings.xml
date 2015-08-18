@@ -3,8 +3,8 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_group_page">GroupPage</string>
-    <string name="title_activity_result_page">ResultPage</string>
+    <string name="title_activity_group_page">Your Groups</string>
+    <string name="title_activity_result_page">Results</string>
 
     <string name="facebook_app_id">1611349875791388</string>
     <string name="action_logout">Logout</string>

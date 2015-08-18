@@ -1,8 +1,10 @@
 package com.me.shubham.groupstat;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -65,7 +67,7 @@ public class GroupPage extends Activity {
             LoginManager.getInstance().logOut();
 
             Intent intent = new Intent(this, LoginPage.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
 
             return true;
@@ -103,12 +105,25 @@ public class GroupPage extends Activity {
                                 listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                     @Override
                                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                        GroupInfo groupInfo = cda.getGroupInfo(position);
+                                        final GroupInfo groupInfo = cda.getGroupInfo(position);
 
-                                        Intent intent = new Intent(GroupPage.this, ResultPage.class);
-                                        intent.putExtra("groupId", groupInfo.id);
-                                        intent.putExtra("groupName", groupInfo.name);
-                                        startActivity(intent);
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(GroupPage.this);
+                                        String[] options = {"Likes", "Posts"};
+                                        builder.setTitle("Sort by...").setItems(options, new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(GroupPage.this, ResultPage.class);
+                                                intent.putExtra("groupId", groupInfo.id);
+                                                intent.putExtra("groupName", groupInfo.name);
+                                                intent.putExtra("optionSelected", which);
+                                                startActivity(intent);
+                                            }
+                                        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                
+                                            }
+                                        }).create().show();
                                     }
                                 });
 
