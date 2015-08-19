@@ -4,11 +4,17 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -33,14 +39,13 @@ public class ResultPage extends Activity {
     Map<person, resultingData> from;
     ProgressDialog progressDialog;
 
-    TextView test;
+    int optionSelected;
     GraphRequest.Callback callback = new GraphRequest.Callback() {
         @Override
         public void onCompleted(GraphResponse graphResponse) {
             processResponse(graphResponse);
         }
     };
-    int optionSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +56,6 @@ public class ResultPage extends Activity {
         if (actionBar != null)
             actionBar.setTitle(getIntent().getStringExtra("groupName"));
 
-        test = (TextView) findViewById(R.id.something);
         from = new HashMap<>();
 
         optionSelected = getIntent().getIntExtra("optionSelected", 0);
@@ -113,37 +117,14 @@ public class ResultPage extends Activity {
         }
     }
 
+    resultCodeAdapter rca;
+
     private void displayResults(int optionSelected) {
 
-        List<Map.Entry<person, resultingData>> list = new ArrayList<>(from.entrySet());
+        rca = new resultCodeAdapter(optionSelected);
+        ListView resultListView = (ListView) findViewById(R.id.resultListView);
+        resultListView.setAdapter(rca);
 
-        if (optionSelected == 0) {
-            Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
-                @Override
-                public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
-                    return rhs.getValue().numLikes - lhs.getValue().numLikes;
-                }
-            });
-        } else if (optionSelected == 1) {
-            Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
-                @Override
-                public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
-                    return rhs.getValue().numPosts - lhs.getValue().numPosts;
-                }
-            });
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<person, resultingData> entry : list) {
-            if (optionSelected == 0) {
-                if (entry.getValue().numLikes != 0)
-                    sb.append(entry.getKey().name).append(": ").append(entry.getValue().numLikes).append("\n");
-            } else if (optionSelected == 1) {
-                sb.append(entry.getKey().name).append(": ").append(entry.getValue().numPosts).append("\n");
-            }
-        }
-
-        test.setText(sb.toString());
         progressDialog.dismiss();
     }
 
@@ -176,11 +157,8 @@ public class ResultPage extends Activity {
             builder.setTitle("Sort by...").setItems(options, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if(which == 0) {
-                        displayResults(0);
-                    } else if (which == 1){
-                        displayResults(1);
-                    }
+                    rca.sort(which);
+                    rca.notifyDataSetChanged();
                 }
             }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
@@ -234,6 +212,67 @@ public class ResultPage extends Activity {
         @Override
         public String toString() {
             return String.valueOf(numPosts) + String.valueOf(numLikes);
+        }
+    }
+
+    public class resultCodeAdapter extends BaseAdapter {
+
+        List<Map.Entry<person, resultingData>> list;
+
+        public resultCodeAdapter(int optionSelected) {
+            list = new ArrayList<>(from.entrySet());
+            sort(optionSelected);
+        }
+
+        public void sort(int optionSelected) {
+            if (optionSelected == 0) {
+                Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
+                    @Override
+                    public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
+                        return rhs.getValue().numLikes - lhs.getValue().numLikes;
+                    }
+                });
+            } else if (optionSelected == 1) {
+                Collections.sort(list, new Comparator<Map.Entry<person, resultingData>>() {
+                    @Override
+                    public int compare(Map.Entry<person, resultingData> lhs, Map.Entry<person, resultingData> rhs) {
+                        return rhs.getValue().numPosts - lhs.getValue().numPosts;
+                    }
+                });
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return list.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater inflater = (LayoutInflater) ResultPage.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(R.layout.result_adapter_display, parent, false);
+            }
+            TextView personNameTextView = (TextView) convertView.findViewById(R.id.personNameTextView);
+            TextView likesTextView = (TextView) convertView.findViewById(R.id.likesTextView);
+            TextView postsTextView = (TextView) convertView.findViewById(R.id.postsTextView);
+
+            Map.Entry<person, resultingData> entry = list.get(position);
+            personNameTextView.setText(entry.getKey().name);
+            likesTextView.setText(String.valueOf("Likes: " + entry.getValue().numLikes));
+            postsTextView.setText(String.valueOf("Posts: " + entry.getValue().numPosts));
+
+            return convertView;
         }
     }
 }

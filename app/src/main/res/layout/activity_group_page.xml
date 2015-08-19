@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:scrollbars="vertical"
-    tools:context="com.me.shubham.stataggregator.Groups"
+    tools:context="com.me.shubham.stataggregator.GroupPage"
     android:divider="#000"
     android:dividerHeight="1dp">
 

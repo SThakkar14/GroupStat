@@ -13,7 +13,7 @@
         android:maxLines="1"
         android:scrollHorizontally="true"
         android:text="adfasdfasdfasadfasdfasdfasadfasdfasdfasadfasdfasdfas"
-        android:textSize="30dp">
+        android:textSize="30sp">
 
     </TextView>
 
@@ -23,5 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_arrow_forward_black_24dp" />
+        android:src="@drawable/ic_arrow_forward_black_24dp"
+        android:contentDescription="the arrow?"
+        android:alpha="0.54"/>
 </RelativeLayout>
