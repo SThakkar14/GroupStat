@@ -30,7 +30,8 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".ResultPage"
-            android:label="@string/title_activity_result_page" >
+            android:label="@string/title_activity_result_page"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation">
         </activity>
         <activity
             android:name=".GroupPage"
